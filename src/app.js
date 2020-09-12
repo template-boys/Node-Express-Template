@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import indexRouter from './routes/index';
-import userRouter from "./routes/user";
+import usersRouter from "./routes/users";
 import config from '../config';
 
 const {mongoURI, mongoDbName} = config;
@@ -17,19 +17,20 @@ app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 
 // DB Config
-const db = `${mongoURI}/${mongoDbName}`;
+const DB_URL = `${mongoURI}/${mongoDbName}`;
 
 // Connect to Mongo
-mongoose.connect(db, {
+mongoose.connect(DB_URL, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useUnifiedTopology: true
-}).then(() => {
-    console.log('MongoDB Connected...')
-}).catch(err => console.log(err));
+})
+const db = mongoose.connection;
+db.on('error', (error) => console.log(error));
+db.once('open', () => console.log('MongoDB Connected...'));
 
 // Routes
 app.use('/api', indexRouter);
-app.use('/api/user', userRouter);
+app.use('/api/users', usersRouter);
 
 export default app;

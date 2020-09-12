@@ -1,0 +1,37 @@
+GET http://localhost:3000/api/users
+
+###
+GET http://localhost:3000/api/users/5f5d10c1cf3f463ca4659dd9
+
+###
+DELETE http://localhost:3000/api/users/5f5d10c1cf3f463ca4659dd9
+
+###
+POST http://localhost:3000/api/users/register
+Content-Type: application/json
+
+{
+"name":"James",
+"email":"jabonasera@gmail.com",
+"password":"password"
+}
+
+###
+PATCH http://localhost:3000/api/users/5f5d10c1cf3f463ca4659dd9
+Content-Type: application/json
+
+{
+  "name":"Bob",
+  "email":"jabonasera@gmail.com",
+  "password":"password"
+}
+
+###
+POST http://localhost:3000/api/users/login
+Content-Type: application/json
+
+{
+  "email":"jabonasera@gmail.com",
+  "password":"password"
+}
+
