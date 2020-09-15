@@ -3,9 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "prestart": "babel ./src --out-dir build",
-    "start": "node ./build/bin/www",
-    "startdev": "nodemon --exec babel-node ./src/bin/www"
+    "start": "node ./build/app",
+    "startdev": "nodemon --exec babel-node ./src/app"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

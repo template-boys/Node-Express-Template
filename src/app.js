@@ -25,14 +25,17 @@ mongoose.connect(`${process.env.MONGO_URI}/${process.env.MONGO_DB_NAME}`, {
 })
 const db = mongoose.connection;
 db.on('error', (error) => console.log(error));
-db.once('open', () => console.log('MongoDB Connected...'));
+db.once('open', () => console.log(`MongoDB:${process.env.MONGO_DB_NAME} Connected...`));
 
-// Routes
+// API Routes
 app.use('/api', indexRouter);
 app.use('/api/users', usersRouter);
 
+// Hello App
 app.use('/', (req, res) => {
     res.json({message: 'Hello DnDnD'});
 });
+
+app.listen(process.env.PORT || 3000);
 
 export default app;
