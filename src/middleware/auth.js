@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
-import config from '../../config';
-
-const { jwtSecret } = config;
+if(process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 
 export default (req, res, next) => {
     const token = req.header('x-auth-token');
@@ -12,7 +12,7 @@ export default (req, res, next) => {
 
     try {
         // Verify token
-        const decoded = jwt.verify(token, jwtSecret);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         // Add user from payload
         req.user = decoded;
         next();

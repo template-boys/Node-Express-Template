@@ -1,3 +1,7 @@
+if(process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+
 import logger from 'morgan';
 import express from 'express';
 import mongoose from 'mongoose';
@@ -5,9 +9,6 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import indexRouter from './routes/index';
 import usersRouter from "./routes/users";
-import config from '../config';
-
-const {mongoURI, mongoDbName} = config;
 
 const app = express();
 app.use(cors())
@@ -16,11 +17,8 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 
-// DB Config
-const DB_URL = `${mongoURI}/${mongoDbName}`;
-
 // Connect to Mongo
-mongoose.connect(DB_URL, {
+mongoose.connect(`${process.env.MONGO_URI}/${process.env.MONGO_DB_NAME}`, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useUnifiedTopology: true
@@ -32,5 +30,9 @@ db.once('open', () => console.log('MongoDB Connected...'));
 // Routes
 app.use('/api', indexRouter);
 app.use('/api/users', usersRouter);
+
+app.use('/', (req, res) => {
+    res.json({message: 'Hello DnDnD'});
+});
 
 export default app;

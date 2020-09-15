@@ -1,9 +1,11 @@
 import express from 'express';
-import config from '../../config';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import User from "../models/User";
-const { jwtSecret } = config;
+if(process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
 const usersRouter = express.Router();
 
 /**
@@ -135,7 +137,7 @@ usersRouter.post('/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw Error('Invalid credentials');
 
-    const token = jwt.sign({ id: user._id }, jwtSecret, { expiresIn: 3600 });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: 3600 });
     if (!token) throw Error('Could not sign the token');
 
     res.status(200).json({
