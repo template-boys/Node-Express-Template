@@ -1,8 +1,8 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import User from "../models/User";
-if(process.env.NODE_ENV !== 'production') {
+import User from '../models/User';
+if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 
@@ -18,7 +18,7 @@ usersRouter.get('/', async (req, res) => {
     const users = await User.find();
     res.json(users);
   } catch (err) {
-    res.status(500).json({message: err.message})
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -39,7 +39,7 @@ usersRouter.get('/:id', getUser, async (req, res) => {
 usersRouter.delete('/:id', getUser, async (req, res) => {
   try {
     await res.user.remove();
-    res.json({message: 'Deleted User'});
+    res.json({ message: 'Deleted User' });
   } catch (err) {
     res.status(500).json({ message: 'Cannot find user' });
   }
@@ -93,14 +93,14 @@ usersRouter.post('/register', async (req, res) => {
     const newUser = new User({
       name,
       email,
-      password: hash
+      password: hash,
     });
 
     const savedUser = await newUser.save();
     if (!savedUser) throw Error('Something went wrong saving the user');
 
-    const token = jwt.sign({ id: savedUser._id }, jwtSecret, {
-      expiresIn: 3600
+    const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, {
+      expiresIn: 3600,
     });
 
     res.status(200).json({
@@ -108,8 +108,8 @@ usersRouter.post('/register', async (req, res) => {
       user: {
         id: savedUser.id,
         name: savedUser.name,
-        email: savedUser.email
-      }
+        email: savedUser.email,
+      },
     });
   } catch (e) {
     res.status(400).json({ message: e.message });
@@ -126,7 +126,7 @@ usersRouter.post('/login', async (req, res) => {
 
   // Simple validation
   if (!email || !password) {
-    return res.status(400).json({ msg: 'Please enter all fields' });
+    return res.status(401).json({ msg: 'Please enter all fields' });
   }
 
   try {
@@ -137,19 +137,57 @@ usersRouter.post('/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw Error('Invalid credentials');
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: 3600 });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: 3600,
+    });
     if (!token) throw Error('Could not sign the token');
 
-    res.status(200).json({
-      token,
+    res
+      .status(200)
+      .json({
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+        },
+      })
+      .cookie('token', 'jibberishCookie', {
+        httpOnly: false,
+        secure: true,
+        sameSite: 'none',
+      });
+  } catch (e) {
+    res.status(401).json({ message: e.message });
+  }
+});
+
+/**
+ * @route   POST api/users/ping
+ * @desc    Check JWT
+ * @access  Public
+ */
+usersRouter.post('/ping', async (req, res) => {
+  try {
+    const token = req.header('x-auth-token');
+    if (!token) return res.json(false);
+
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
+    if (!verified) return res.json(false);
+
+    const user = await User.findById(verified.id);
+    console.log(user);
+    if (!user) return res.json(false);
+
+    return res.json({
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
-      }
+        email: user.email,
+      },
     });
-  } catch (e) {
-    res.status(400).json({ message: e.message });
+  } catch (err) {
+    res.status(500).json({ err });
   }
 });
 
@@ -157,11 +195,11 @@ async function getUser(req, res, next) {
   let user;
   try {
     user = await User.findById(req.params.id);
-    if(user == null) {
-      return res.status(404).json({ message: 'Cannot find user'});
+    if (user == null) {
+      return res.status(404).json({ message: 'Cannot find user' });
     }
   } catch (err) {
-    return res.status(500).json({message: err.message});
+    return res.status(500).json({ message: err.message });
   }
 
   res.user = user;
