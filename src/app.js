@@ -35,7 +35,7 @@ app.use('/api/users', usersRouter);
 
 // Hello App
 app.use('/', (req, res) => {
-  res.json({ message: 'Hello DnDnD' });
+  res.json({ message: 'Hello Template' });
 });
 
 app.listen(process.env.PORT || 5000);
