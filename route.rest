@@ -1,23 +1,23 @@
-GET http://localhost:3000/api/users
+GET http://localhost:5000/api/users
 
 ###
-GET http://localhost:3000/api/users/5f5d10c1cf3f463ca4659dd9
+GET http://localhost:5000/api/users/5fb1a5ef8819c83d98baf9f8
 
 ###
-DELETE http://localhost:3000/api/users/5f5d10c1cf3f463ca4659dd9
+DELETE http://localhost:5000/api/users/5f5d10c1cf3f463ca4659dd9
 
 ###
-POST http://localhost:3000/api/users/register
+POST http://localhost:5000/api/users/register
 Content-Type: application/json
 
 {
-"name":"James",
-"email":"jabonasera@gmail.com",
+"name":"that",
+"email":"that@gmail.com",
 "password":"password"
 }
 
 ###
-PATCH http://localhost:3000/api/users/5f5d10c1cf3f463ca4659dd9
+PATCH http://localhost:5000/api/users/5f5d10c1cf3f463ca4659dd9
 Content-Type: application/json
 
 {
@@ -27,11 +27,18 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:3000/api/users/login
+POST http://localhost:5000/api/users/login
 Content-Type: application/json
 
 {
   "email":"jabonasera@gmail.com",
   "password":"password"
 }
+
+###
+POST http://localhost:5000/api/users/verify_user
+Content-Type: application/json
+x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmYjFhYzViZDY2NzgxMWY4Yzk5MzYyZSIsImlhdCI6MTYwNTQ5MjI5MCwiZXhwIjoxNjA1NDk1ODkwfQ.3OAaeor9pNIhr8nXpG6J4trmSTEnuZfX66ghw0JA3rs
+
+{}
 
