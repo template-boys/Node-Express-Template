@@ -18,6 +18,6 @@ export default async (req, res, next) => {
     req.user = await User.findById(decoded.id);
     next();
   } catch (e) {
-    res.status(400).json({ msg: "Token is not valid" });
+    res.status(400).json({ msg: e.msg });
   }
 };

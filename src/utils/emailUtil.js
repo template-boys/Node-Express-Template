@@ -12,8 +12,7 @@ export function sendVerificationEmail(user, hostUrl) {
   const verificationToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: 3600,
   });
-  const url = `https://${hostUrl}/user_verified/${verificationToken}`;
-  console.log(url);
+  const url = `${hostUrl}/user_verified/${verificationToken}`;
 
   const emailOptions = {
     from: "react.template.email@gmail.com",
