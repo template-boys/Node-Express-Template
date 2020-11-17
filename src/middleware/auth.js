@@ -1,15 +1,15 @@
-import jwt from "jsonwebtoken";
-import User from "../models/User";
-if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config();
+import jwt from 'jsonwebtoken';
+import User from '../models/User';
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
 }
 
 export default async (req, res, next) => {
-  const token = req.header("x-auth-token");
+  const token = req.header('x-auth-token');
 
   // Check for token
   if (!token)
-    return res.status(401).json({ msg: "No token, authorizaton denied" });
+    return res.status(401).json({ msg: 'No token, authorizaton denied' });
 
   try {
     // Verify token
