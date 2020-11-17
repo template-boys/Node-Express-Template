@@ -1,11 +1,11 @@
-import express from "express";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
-import User from "../models/User";
-import * as emailUtil from "../utils/emailUtil";
-import auth from "../middleware/auth";
-if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config();
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import User from '../models/User';
+import * as emailUtil from '../utils/emailUtil';
+import auth from '../middleware/auth';
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
 }
 
 const usersRouter = express.Router();
@@ -15,7 +15,7 @@ const usersRouter = express.Router();
  * @desc    Getting all users
  * @access  Public
  */
-usersRouter.get("/", async (req, res) => {
+usersRouter.get('/', async (req, res) => {
   try {
     const users = await User.find();
     res.json(users);
@@ -29,7 +29,7 @@ usersRouter.get("/", async (req, res) => {
  * @desc    Getting one user with id
  * @access  Public
  */
-usersRouter.get("/:id", getUser, async (req, res) => {
+usersRouter.get('/:id', getUser, async (req, res) => {
   res.json(res.user);
 });
 
@@ -38,12 +38,12 @@ usersRouter.get("/:id", getUser, async (req, res) => {
  * @desc    Delete user with id
  * @access  Public
  */
-usersRouter.delete("/:id", getUser, async (req, res) => {
+usersRouter.delete('/:id', getUser, async (req, res) => {
   try {
     await res.user.remove();
-    res.json({ message: "Deleted User" });
+    res.json({ message: 'Deleted User' });
   } catch (err) {
-    res.status(500).json({ message: "Cannot find user" });
+    res.status(500).json({ message: 'Cannot find user' });
   }
 });
 
@@ -52,10 +52,10 @@ usersRouter.delete("/:id", getUser, async (req, res) => {
  * @desc    Update user's info (not email or password) with id
  * @access  Public
  */
-usersRouter.patch("/:id", getUser, async (req, res) => {
+usersRouter.patch('/:id', getUser, async (req, res) => {
   const { name } = req.body;
   if (!name) {
-    return res.status(400).json({ message: "Please enter all fields" });
+    return res.status(400).json({ message: 'Please enter all fields' });
   } else {
     res.user.name = name;
   }
@@ -73,23 +73,23 @@ usersRouter.patch("/:id", getUser, async (req, res) => {
  * @desc    Register new user
  * @access  Public
  */
-usersRouter.post("/register", async (req, res) => {
+usersRouter.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 
   // Simple validation
   if (!name || !email || !password) {
-    return res.status(400).json({ msg: "Please enter all fields" });
+    return res.status(400).json({ msg: 'Please enter all fields' });
   }
 
   try {
     const user = await User.findOne({ email });
-    if (user) throw Error("User already exists");
+    if (user) throw Error('User already exists');
 
     const salt = await bcrypt.genSalt(10);
-    if (!salt) throw Error("Something went wrong with encryption");
+    if (!salt) throw Error('Something went wrong with encryption');
 
     const hash = await bcrypt.hash(password, salt);
-    if (!hash) throw Error("Something went wrong when encrypting the password");
+    if (!hash) throw Error('Something went wrong when encrypting the password');
 
     const newUser = new User({
       name,
@@ -98,7 +98,7 @@ usersRouter.post("/register", async (req, res) => {
     });
 
     const savedUser = await newUser.save();
-    if (!savedUser) throw Error("Something went wrong saving the user");
+    if (!savedUser) throw Error('Something went wrong saving the user');
 
     const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, {
       expiresIn: 3600,
@@ -124,26 +124,26 @@ usersRouter.post("/register", async (req, res) => {
  * @desc    Login user
  * @access  Public
  */
-usersRouter.post("/login", async (req, res) => {
+usersRouter.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   // Simple validation
   if (!email || !password) {
-    return res.status(401).json({ msg: "Please enter all fields" });
+    return res.status(401).json({ msg: 'Please enter all fields' });
   }
 
   try {
     // Check for existing user
     const user = await User.findOne({ email });
-    if (!user) throw Error("User Does not exist");
+    if (!user) throw Error('User Does not exist');
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) throw Error("Invalid credentials");
+    if (!isMatch) throw Error('Invalid credentials');
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: 3600,
     });
-    if (!token) throw Error("Could not sign the token");
+    if (!token) throw Error('Could not sign the token');
 
     res.status(200).json({
       token,
@@ -163,7 +163,7 @@ usersRouter.post("/login", async (req, res) => {
  * @desc    Check verification JWT
  * @access  Public
  */
-usersRouter.post("/verify_user", auth, async (req, res) => {
+usersRouter.post('/verify_user', auth, async (req, res) => {
   try {
     const user = req.user;
     user.verified = true;
@@ -180,7 +180,7 @@ usersRouter.post("/verify_user", auth, async (req, res) => {
  * @desc    Check JWT
  * @access  Public
  */
-usersRouter.post("/ping", auth, async (req, res) => {
+usersRouter.post('/ping', auth, async (req, res) => {
   try {
     const user = req.user;
     if (!user) return res.json(false);
@@ -205,7 +205,7 @@ async function getUser(req, res, next) {
   try {
     user = await User.findById(req.params.id);
     if (user == null) {
-      return res.status(404).json({ message: "Cannot find user" });
+      return res.status(404).json({ message: 'Cannot find user' });
     }
   } catch (err) {
     return res.status(500).json({ message: err.message });
