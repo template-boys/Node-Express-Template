@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from 'mongoose';
 
 // Create Schema
 const UserSchema = new Schema({
@@ -19,12 +19,16 @@ const UserSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  admin: {
+    type: Boolean,
+    default: false,
+  },
   register_date: {
     type: Date,
     default: Date.now,
   },
 });
 
-const User = model("user", UserSchema);
+const User = model('user', UserSchema);
 
 export default User;
