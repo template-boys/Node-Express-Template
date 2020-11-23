@@ -7,7 +7,8 @@
     "build": "npm run clean && npm run babel-build",
     "babel-build": "babel -d ./build ./src -s",
     "clean": "rm -rf ./build && mkdir build",
-    "startdev": "nodemon --exec babel-node ./src/app"
+    "startdev": "npm run lint && nodemon --exec babel-node ./src/app",
+    "lint": "eslint --fix **/*.js"
   },
   "dependencies": {
     "@babel/cli": "^7.11.6",
@@ -31,6 +32,12 @@
     "nodemailer-smtp-transport": "^2.7.4"
   },
   "devDependencies": {
+    "eslint": "^7.14.0",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
     "nodemon": "^2.0.4"
   }
 }
