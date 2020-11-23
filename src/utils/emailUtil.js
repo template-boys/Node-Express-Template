@@ -1,8 +1,8 @@
-import nodemailer from "nodemailer";
-import smtpTransport from "nodemailer-smtp-transport";
-import jwt from "jsonwebtoken";
-if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config();
+import nodemailer from 'nodemailer';
+import smtpTransport from 'nodemailer-smtp-transport';
+import jwt from 'jsonwebtoken';
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
 }
 
 const appEmail = process.env.APP_EMAIL;
@@ -15,10 +15,30 @@ export function sendVerificationEmail(user, hostUrl) {
   const url = `${hostUrl}/user_verified/${verificationToken}`;
 
   const emailOptions = {
-    from: "react.template.email@gmail.com",
+    from: 'react.template.email@gmail.com',
     to: user.email,
-    subject: "Verify your react template account",
+    subject: 'Verify your react template account',
     text: `Verify your account with this link: \n ${url}`,
+  };
+
+  sendEmail(user, emailOptions);
+}
+
+export function sendResetPasswordEmail(user, hostUrl) {
+  const resetPasswordToken = jwt.sign(
+    { id: user._id },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: 3600,
+    }
+  );
+  const url = `${hostUrl}/password_reset/${resetPasswordToken}`;
+
+  const emailOptions = {
+    from: 'react.template.email@gmail.com',
+    to: user.email,
+    subject: 'Reset your react template account password',
+    text: `Reset your password with this link: \n ${url}`,
   };
 
   sendEmail(user, emailOptions);
@@ -27,8 +47,8 @@ export function sendVerificationEmail(user, hostUrl) {
 export function sendEmail(user, emailOptions) {
   let transporter = nodemailer.createTransport(
     smtpTransport({
-      service: "gmail",
-      host: "smtp.gmail.com",
+      service: 'gmail',
+      host: 'smtp.gmail.com',
       auth: {
         user: appEmail,
         pass: appEmailPass,
