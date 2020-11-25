@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import User from '../models/User';
 import * as emailUtil from '../utils/emailUtil';
-import auth from '../middleware/auth';
+import { authenticate, adminAuthenticate, verify } from '../middleware/auth';
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
@@ -15,12 +15,12 @@ const usersRouter = express.Router();
  * @desc    Getting all users
  * @access  Public
  */
-usersRouter.get('/', async (req, res) => {
+usersRouter.get('/', adminAuthenticate, async (req, res) => {
   try {
     const users = await User.find();
     res.json(users);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
   }
 });
 
@@ -29,7 +29,7 @@ usersRouter.get('/', async (req, res) => {
  * @desc    Getting one user with id
  * @access  Public
  */
-usersRouter.get('/:id', getUser, async (req, res) => {
+usersRouter.get('/:id', adminAuthenticate, async (req, res) => {
   res.json(res.user);
 });
 
@@ -38,7 +38,7 @@ usersRouter.get('/:id', getUser, async (req, res) => {
  * @desc    Delete user with id
  * @access  Public
  */
-usersRouter.delete('/:id', getUser, async (req, res) => {
+usersRouter.delete('/:id', authenticate, async (req, res) => {
   try {
     await res.user.remove();
     res.json({ message: 'Deleted User' });
@@ -52,7 +52,7 @@ usersRouter.delete('/:id', getUser, async (req, res) => {
  * @desc    Update user's info (not email or password) with id
  * @access  Public
  */
-usersRouter.patch('/:id', getUser, async (req, res) => {
+usersRouter.patch('/:id', authenticate, async (req, res) => {
   const { name } = req.body;
   if (!name) {
     return res.status(400).json({ message: 'Please enter all fields' });
@@ -63,8 +63,8 @@ usersRouter.patch('/:id', getUser, async (req, res) => {
   try {
     const updatedUser = await res.user.save();
     res.json(updatedUser);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+  } catch (e) {
+    res.status(400).json({ message: e.message });
   }
 });
 
@@ -78,7 +78,7 @@ usersRouter.post('/register', async (req, res) => {
 
   // Simple validation
   if (!name || !email || !password) {
-    return res.status(400).json({ msg: 'Please enter all fields' });
+    return res.status(400).json({ message: 'Please enter all fields' });
   }
 
   try {
@@ -163,15 +163,15 @@ usersRouter.post('/login', async (req, res) => {
  * @desc    Check verification JWT
  * @access  Public
  */
-usersRouter.post('/verify_user', auth, async (req, res) => {
+usersRouter.post('/verify_user', verify, async (req, res) => {
   try {
     const user = req.user;
     user.verified = true;
 
     const verifiedUser = await user.save();
     res.json(verifiedUser);
-  } catch (err) {
-    res.status(500).json({ err });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
   }
 });
 
@@ -180,7 +180,7 @@ usersRouter.post('/verify_user', auth, async (req, res) => {
  * @desc    Check JWT
  * @access  Public
  */
-usersRouter.post('/ping', auth, async (req, res) => {
+usersRouter.post('/ping', authenticate, async (req, res) => {
   try {
     const user = req.user;
     if (!user) return res.json(false);
@@ -192,27 +192,9 @@ usersRouter.post('/ping', auth, async (req, res) => {
         email: user.email,
       },
     });
-  } catch (err) {
-    res.status(500).json({ err });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
   }
 });
-
-/**
- * Middleware
- */
-async function getUser(req, res, next) {
-  let user;
-  try {
-    user = await User.findById(req.params.id);
-    if (user == null) {
-      return res.status(404).json({ message: 'Cannot find user' });
-    }
-  } catch (err) {
-    return res.status(500).json({ message: err.message });
-  }
-
-  res.user = user;
-  next();
-}
 
 export default usersRouter;

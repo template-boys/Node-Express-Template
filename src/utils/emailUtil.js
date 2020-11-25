@@ -24,6 +24,26 @@ export function sendVerificationEmail(user, hostUrl) {
   sendEmail(user, emailOptions);
 }
 
+export function sendResetPasswordEmail(user, hostUrl) {
+  const resetPasswordToken = jwt.sign(
+    { id: user._id },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: 3600,
+    }
+  );
+  const url = `${hostUrl}/password_reset/${resetPasswordToken}`;
+
+  const emailOptions = {
+    from: 'react.template.email@gmail.com',
+    to: user.email,
+    subject: 'Reset your react template account password',
+    text: `Reset your password with this link: \n ${url}`,
+  };
+
+  sendEmail(user, emailOptions);
+}
+
 export function sendEmail(user, emailOptions) {
   let transporter = nodemailer.createTransport(
     smtpTransport({
