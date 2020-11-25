@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== 'production') {
 const appEmail = process.env.APP_EMAIL;
 const appEmailPass = process.env.APP_EMAIL_SECRET;
 
-export function sendVerificationEmail (user, hostUrl) {
+export function sendVerificationEmail(user, hostUrl) {
   const verificationToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: 3600,
   });
@@ -24,7 +24,7 @@ export function sendVerificationEmail (user, hostUrl) {
   sendEmail(user, emailOptions);
 }
 
-export function sendResetPasswordEmail (user, hostUrl) {
+export function sendResetPasswordEmail(user, hostUrl) {
   const resetPasswordToken = jwt.sign(
     { id: user._id },
     process.env.JWT_SECRET,
@@ -44,7 +44,7 @@ export function sendResetPasswordEmail (user, hostUrl) {
   sendEmail(user, emailOptions);
 }
 
-export function sendEmail (user, emailOptions) {
+export function sendEmail(user, emailOptions) {
   const transporter = nodemailer.createTransport(
     smtpTransport({
       service: 'gmail',
