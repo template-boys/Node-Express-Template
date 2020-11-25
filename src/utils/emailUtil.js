@@ -45,7 +45,7 @@ export function sendResetPasswordEmail(user, hostUrl) {
 }
 
 export function sendEmail(user, emailOptions) {
-  let transporter = nodemailer.createTransport(
+  const transporter = nodemailer.createTransport(
     smtpTransport({
       service: 'gmail',
       host: 'smtp.gmail.com',

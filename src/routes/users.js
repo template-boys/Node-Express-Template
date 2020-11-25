@@ -83,13 +83,19 @@ usersRouter.post('/register', async (req, res) => {
 
   try {
     const user = await User.findOne({ email });
-    if (user) throw Error('User already exists');
+    if (user) {
+      throw Error('User already exists');
+    }
 
     const salt = await bcrypt.genSalt(10);
-    if (!salt) throw Error('Something went wrong with encryption');
+    if (!salt) {
+      throw Error('Something went wrong with encryption');
+    }
 
     const hash = await bcrypt.hash(password, salt);
-    if (!hash) throw Error('Something went wrong when encrypting the password');
+    if (!hash) {
+      throw Error('Something went wrong when encrypting the password');
+    }
 
     const newUser = new User({
       name,
@@ -98,11 +104,9 @@ usersRouter.post('/register', async (req, res) => {
     });
 
     const savedUser = await newUser.save();
-    if (!savedUser) throw Error('Something went wrong saving the user');
-
-    const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, {
-      expiresIn: 3600,
-    });
+    if (!savedUser) {
+      throw Error('Something went wrong saving the user');
+    }
 
     // Send verification email
     emailUtil.sendVerificationEmail(savedUser, req.headers.origin);
@@ -135,15 +139,21 @@ usersRouter.post('/login', async (req, res) => {
   try {
     // Check for existing user
     const user = await User.findOne({ email });
-    if (!user) throw Error('User Does not exist');
+    if (!user) {
+      throw Error('User Does not exist');
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) throw Error('Invalid credentials');
+    if (!isMatch) {
+      throw Error('Invalid credentials');
+    }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: 3600,
     });
-    if (!token) throw Error('Could not sign the token');
+    if (!token) {
+      throw Error('Could not sign the token');
+    }
 
     res.status(200).json({
       token,
@@ -183,7 +193,9 @@ usersRouter.post('/verify_user', verify, async (req, res) => {
 usersRouter.post('/ping', authenticate, async (req, res) => {
   try {
     const user = req.user;
-    if (!user) return res.json(false);
+    if (!user) {
+      return res.json(false);
+    }
 
     return res.json({
       user: {

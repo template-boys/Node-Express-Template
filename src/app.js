@@ -1,7 +1,3 @@
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
-}
-
 import logger from 'morgan';
 import express from 'express';
 import mongoose from 'mongoose';
@@ -9,6 +5,10 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import indexRouter from './routes/index';
 import usersRouter from './routes/users';
+
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 
 const app = express();
 app.use(cors());
