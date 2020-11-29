@@ -9,16 +9,20 @@ const appEmail = process.env.APP_EMAIL;
 const appEmailPass = process.env.APP_EMAIL_SECRET;
 
 export function sendVerificationEmail(user, hostUrl) {
-  const verificationToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: 3600,
-  });
+  const verificationToken = jwt.sign(
+    { id: user._id, tokenType: 'V' },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: 3600,
+    }
+  );
   const url = `${hostUrl}/user_verified/${verificationToken}`;
 
   const emailOptions = {
     from: 'react.template.email@gmail.com',
     to: user.email,
     subject: 'Verify your react template account',
-    text: `Verify your account with this link: \n ${url}`,
+    html: `<div><p>Verify your account with this link:</p> <p><a href=${url}>Verify Account</a></p></div>`,
   };
 
   sendEmail(user, emailOptions);
@@ -26,19 +30,19 @@ export function sendVerificationEmail(user, hostUrl) {
 
 export function sendResetPasswordEmail(user, hostUrl) {
   const resetPasswordToken = jwt.sign(
-    { id: user._id },
+    { id: user._id, tokenType: 'R' },
     process.env.JWT_SECRET,
     {
       expiresIn: 3600,
     }
   );
-  const url = `${hostUrl}/password_reset/${resetPasswordToken}`;
+  const url = `${hostUrl}/reset_password/${resetPasswordToken}`;
 
   const emailOptions = {
     from: 'react.template.email@gmail.com',
     to: user.email,
     subject: 'Reset your react template account password',
-    text: `Reset your password with this link: \n ${url}`,
+    html: `<div><p>Reset your password with this link:</p> <p><a href=${url}>Reset Password</a></p></div>`,
   };
 
   sendEmail(user, emailOptions);
