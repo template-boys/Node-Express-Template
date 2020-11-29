@@ -3,7 +3,12 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import User from '../models/User';
 import * as emailUtil from '../utils/emailUtil';
-import { authenticate, adminAuthenticate, verify } from '../middleware/auth';
+import {
+  authenticate,
+  adminAuthenticate,
+  verify,
+  resetPasswordAuth,
+} from '../middleware/auth';
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
@@ -20,7 +25,7 @@ usersRouter.get('/', adminAuthenticate, async (req, res) => {
     const users = await User.find();
     res.json(users);
   } catch (e) {
-    res.status(500).json({ message: e.message });
+    res.status(500).json(e.message);
   }
 });
 
@@ -42,8 +47,8 @@ usersRouter.delete('/:id', authenticate, async (req, res) => {
   try {
     await res.user.remove();
     res.json({ message: 'Deleted User' });
-  } catch (err) {
-    res.status(500).json({ message: 'Cannot find user' });
+  } catch (e) {
+    res.status(500).json(e.message);
   }
 });
 
@@ -64,7 +69,7 @@ usersRouter.patch('/:id', authenticate, async (req, res) => {
     const updatedUser = await res.user.save();
     res.json(updatedUser);
   } catch (e) {
-    res.status(400).json({ message: e.message });
+    res.status(400).json(e.message);
   }
 });
 
@@ -84,17 +89,19 @@ usersRouter.post('/register', async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (user) {
-      throw Error('User already exists');
+      throw Error({ message: 'User already exists' });
     }
 
     const salt = await bcrypt.genSalt(10);
     if (!salt) {
-      throw Error('Something went wrong with encryption');
+      throw Error({ message: 'Something went wrong with encryption' });
     }
 
     const hash = await bcrypt.hash(password, salt);
     if (!hash) {
-      throw Error('Something went wrong when encrypting the password');
+      throw Error({
+        message: 'Something went wrong when encrypting the password',
+      });
     }
 
     const newUser = new User({
@@ -105,7 +112,7 @@ usersRouter.post('/register', async (req, res) => {
 
     const savedUser = await newUser.save();
     if (!savedUser) {
-      throw Error('Something went wrong saving the user');
+      throw Error({ message: 'Something went wrong saving the user' });
     }
 
     // Send verification email
@@ -119,7 +126,7 @@ usersRouter.post('/register', async (req, res) => {
       },
     });
   } catch (e) {
-    res.status(400).json({ message: e.message });
+    res.status(400).json(e.message);
   }
 });
 
@@ -133,7 +140,7 @@ usersRouter.post('/login', async (req, res) => {
 
   // Simple validation
   if (!email || !password) {
-    return res.status(401).json({ msg: 'Please enter all fields' });
+    return res.status(401).json({ message: 'Please enter all fields' });
   }
 
   try {
@@ -148,11 +155,15 @@ usersRouter.post('/login', async (req, res) => {
       throw Error('Invalid credentials');
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: 3600,
-    });
+    const token = jwt.sign(
+      { id: user._id, tokenType: 'A' },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: 3600,
+      }
+    );
     if (!token) {
-      throw Error('Could not sign the token');
+      throw Error({ message: 'Could not sign the token' });
     }
 
     res.status(200).json({
@@ -164,7 +175,7 @@ usersRouter.post('/login', async (req, res) => {
       },
     });
   } catch (e) {
-    res.status(401).json({ message: e.message });
+    res.status(401).json(e.message);
   }
 });
 
@@ -181,7 +192,68 @@ usersRouter.post('/verify_user', verify, async (req, res) => {
     const verifiedUser = await user.save();
     res.json(verifiedUser);
   } catch (e) {
-    res.status(500).json({ message: e.message });
+    res.status(500).json(e.message);
+  }
+});
+
+/**
+ * @route   POST api/users/send_reset_password
+ * @desc    Send password reset email
+ * @access  Public
+ */
+usersRouter.post('/send_reset_password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      throw Error({ message: 'Please enter all fields' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.status(200);
+    }
+
+    // Send reset password email
+    emailUtil.sendResetPasswordEmail(user, req.headers.origin);
+
+    res.json({ message: 'Password successfully reset' });
+  } catch (e) {
+    console.log('Failed');
+    res.status(500).json(e.message);
+  }
+});
+
+/**
+ * @route   POST api/users/reset_password
+ * @desc    Set user password with new password
+ * @access  Public
+ */
+usersRouter.post('/reset_password', resetPasswordAuth, async (req, res) => {
+  try {
+    const user = req.user;
+    const { newPassword } = req.body;
+    if (!newPassword) {
+      throw Error({ message: 'Please enter all fields' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    if (!salt) {
+      throw Error({ message: 'Something went wrong with encryption' });
+    }
+
+    const hash = await bcrypt.hash(newPassword, salt);
+    if (!hash) {
+      throw Error({
+        message: 'Something went wrong when encrypting the password',
+      });
+    }
+
+    user.password = hash;
+    await user.save();
+
+    res.json({ message: 'Password successfully reset' });
+  } catch (e) {
+    res.status(500).json(e.message);
   }
 });
 
@@ -205,7 +277,7 @@ usersRouter.post('/ping', authenticate, async (req, res) => {
       },
     });
   } catch (e) {
-    res.status(500).json({ message: e.message });
+    res.status(500).json(e.message);
   }
 });
 
